@@ -1,0 +1,57 @@
+ 
+  { 
+  
+  "This user name already exists.": "اسم هذا المستخدم  موجود ، اختر اسمًا آخر",
+  "This email already exists.": "هذا البريد الإلكتروني موجود اختر بريدًا آخر",
+  "Password must be at least 6 characters.": "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.",
+  "Register Success!": "تم تسجيل الدخول بنجاح",
+  "This email does not exist.": "هذا البريد الإلكتروني غير موجود",
+  "This does not exist.":"هذا المستخدم غير موجود",
+  "Password is incorrect.": "كلمة المرور غير صحيحة",
+  "login success": "نجاح في تسجيل الدخول",
+  "Please login now.": "الرجاء تسجيل الدخول الآن",
+  "Vous avez enregistré avec succès!":"لقد قمت التسجيل بنجاح",
+
+  "commentCtrl" : "commentCtrl",
+  "This post does not exist.":"هذا المنشور غير موجود",
+  "This comment does not exist.":"هذا التعليق غير موجود",
+  "Update Success!":"تم التحديث بنجاح",
+  "You liked this post.":"لقد أحببت هذا المنشور",
+  "Liked Comment!":"أعجبني التعليق!",
+  "UnLiked Comment!":"لا يعجبني التعليق!",
+  "Deleted Comment!":"تعليق محذوف!",
+  
+  
+  "messageCtrl":"messageCtrl",
+  "Create Success!":"تم إنشاؤه بنجاح!",
+  "Delete Success!":"تم الحذف بنجاح!",
+  
+  
+  "postCtrl": "postCtrl",
+  "Please servidoradd your photo.":"الرجاء إضافة صورتك.",
+ "Created Post!":"تم إنشاء المشاركة بنجاح!",
+ "Votre publication a été mis à jour!":"تم تحديث المنشور",
+   "Liked Post!":"أنا أحب هذا المنشور",
+   "UnLiked Post!":"لا أحب هذا المنشور",
+   "Success!":"نجاح!",
+  "Deleted Post!":"مشاركة محذوفة!",
+  "You saved this post.":"لقد حفظت هذا المنصب",
+  "This user does not exist.":"هذا المستخدم غير موجود",
+  "Saved Post!":"المشاركة  محفوظة!",
+   "unSaved Post!":"مشاركة غير محفوظة!",
+  
+  
+  "userCtrl":"userCtrl",
+   
+  "Please add your full name.":"الرجاء إضافة اسمك الكامل",
+   "You followed this user.":"لقد تابعت هذا المستخدم."
+  
+
+
+
+   
+
+
+
+
+}

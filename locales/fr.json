@@ -1,0 +1,58 @@
+{
+  "This user name already exists.": "Cet identifiant existe déjà.",
+  "This email already exists.": "Ce courriel existe déjà.",
+  "Password must be at least 6 characters.": "Le mot de passe doit être au moins de 6 caractères.",
+  "Register Success!": "Inscription réussie!",
+  "This email does not exist.": "Cet e-mail n'existe pas.",
+  "Password is incorrect.": "Le mot de passe est incorrect.",
+  "login success": "Connexion réussie",
+  "Please login now.": "Veuillez vous connecter maintenant.",
+  "This does not exist.":"Cet utilisateur n'existe pas",
+
+
+ 
+  "Please servidoradd your photo.":"Veuillez ajouter votre photo.",
+  "Vous avez enregistré avec succès!":"Vous avez enregistré avec succès",
+ 
+"commentCtrl" : "commentCtrl",
+"This post does not exist.":"Ce poste n'existe pas.",
+"This comment does not exist.":"Ce commentaire n'existe pas.",
+"Update Success!":"Mise à jour réussie !",
+"You liked this post.":"Vous avez aimé cet article.",
+"Liked Comment!":"Commentaire aimé !",
+"UnLiked Comment!":"Commentaire non aimé !",
+"Deleted Comment!":"Commentaire supprimé !",
+
+
+"messageCtrl":"messageCtrl",
+"Create Success!":"Créer avec succès!",
+"Delete Success!":"Supprimer avaic Succès !",
+
+
+"postCtrl": "postCtrl",
+ 
+"Created Post!":"Article créé !",
+ "Votre publication a été mis à jour!":"Post mis à jour avec exito ",
+ "Liked Post!":"Article aimé !",
+ "UnLiked Post!":"Publication pas aimée !",
+ "Success!":"Succès!",
+"Deleted Post!":"Publication supprimé!",
+"You saved this post.":"Vous avez gardé cet publication.",
+"This user does not exist.":"Cet utilisateur n'existe pas.",
+"Saved Post!":"Publication gardé !",
+ "unSaved Post!":"Publication non enregistrée !",
+
+
+
+
+"userCtrl":"userCtrl",
+ 
+"Please add your full name.":"Veuillez ajouter votre nom complet.",
+ 
+"You followed this user.":"Vous avez suivi cet utilisateur"
+
+
+
+
+}
+ 

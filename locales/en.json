@@ -1,0 +1,59 @@
+{
+
+  "authCtlr":"authCtlr",
+  "This user name already exists.": "This user name already exists.",
+  "This email already exists.": "This email already exists.",
+  "Password must be at least 6 characters.": "Password must be at least 6 characters.",
+  "Register Success!": "Register Success!",
+  "This email does not exist.": "This email does not exist.",
+  "Password is incorrect.": "Password is incorrect.",
+  "login success": "login success",
+  "This does not exist.":"This user does not exist",
+  "Please login now.": "Please login now.",
+
+  "Vous avez enregistré avec succès!":"You have successfully registered",
+
+
+"commentCtrl" : "commentCtrl",
+"This post does not exist.":"This post does not exist.",
+"This comment does not exist.":"This comment does not exist.",
+"Update Success!":"Update Success!",
+"You liked this post.":"You liked this post.",
+"Liked Comment!":"Liked Comment!",
+"UnLiked Comment!":"UnLiked Comment!",
+"Deleted Comment!":"Deleted Comment!",
+
+
+"messageCtrl":"messageCtrl",
+"Create Success!":"Create Success!",
+"Delete Success!":"Delete Success!",
+
+
+"postCtrl": "postCtrl",
+"Please servidoradd your photo.":"Please add your photo.",
+"Created Post!":"Created Post!",
+ "Votre publication a été mis à jour!":"Votre publication a été mis à jour!",
+ "Liked Post!":"Liked Post!",
+ "UnLiked Post!":"UnLiked Post!",
+ "Success!":"Success!",
+"Deleted Post!":"Deleted Post!",
+"You saved this post.":"You saved this post.",
+"This user does not exist.":"This user does not exist.",
+"Saved Post!":"Saved Post!",
+ "unSaved Post!":"unSaved Post!",
+
+
+
+
+"userCtrl":"userCtrl",
+ 
+"Please add your full name.":"Please add your full name.",
+ 
+"You followed this user.":"You followed this user."
+
+
+
+
+
+
+}
