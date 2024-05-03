@@ -34,7 +34,7 @@ i18next
 
  
 //app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
-const CLIENT_URL = process.env.CLIENT_URL || 'https://tassili00-p655.onrender.com';
+const CLIENT_URL = process.env.CLIENT_URL || 'https://clienterender.onrender.com';
 
 app.use(cors({
     origin: CLIENT_URL,
