@@ -34,12 +34,12 @@ i18next
 
  
 //app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
-const CLIENT_URL = process.env.CLIENT_URL || 'https://clienterender.onrender.com';
-
+ 
 app.use(cors({
-    origin: CLIENT_URL,
-    credentials: true, // Si necesitas enviar cookies o autenticación
+  origin: `${process.env.CLIENT_URL}`,
+  credentials: true
 }));
+
 
 app.use(cookieParser());
 
