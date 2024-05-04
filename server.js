@@ -9,6 +9,11 @@ const path = require('path');
 const i18next = require('i18next');
 const i18nextMiddleware = require('i18next-http-middleware');
 const app = express();
+app.use(cors({
+  origin : process.env.CLIENT_URL,
+  credentials : true
+}))
+ 
 app.use(express.json());
 
 i18next
@@ -35,10 +40,7 @@ i18next
  
 //app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
  
-app.use(cors({
-  origin: `${process.env.CLIENT_URL}`,
-  credentials: true
-}));
+ 
 
 
 app.use(cookieParser());
