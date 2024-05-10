@@ -10,114 +10,104 @@ const { sendSms, smsOTP, smsVerify } = require('../config/sendSMS'); // Requiere
 const { google } = require('googleapis')
 const { OAuth2 } = google.auth
 const fetch = require('node-fetch')
-
-
-
-
 const client = new OAuth2(process.env.MAILING_SERVICE_CLIENT_ID)
-
 const { CLIENT_URL } = process.env
+
 const authCtrl = {
+
   register: async (req, res) => {
-        try {
-          const { username, account, password } = req.body;
-    
-          // Validación para el campo `account` (puede ser email o teléfono)
-          if (!account) {
-            return res.status(400).json({ msg: "Please add your email or phone." });
-          }
-    
-          const isEmail = validateAccount(account);
-          const isPhone = validPhone(account);
-    
-          if (!isEmail && !isPhone) {
-            return res.status(400).json({ msg: "The email or phone number format is incorrect." });
-          }
-    
-          // Verificar si `account` ya existe
-          const existingUser = await Users.findOne({ account });
-          if (existingUser) {
-            return res.status(400).json({ msg: `This account already exists.` });
-          }
-    
-          if (password.length < 6) {
-            return res.status(400).json({ msg: "Password must be at least 6 chars." });
-          }
-    
-          const passwordHash = await bcrypt.hash(password, 12);
-    
-          const newUser = {
-            username,
-            account,
-            password: passwordHash,
-          };
-    
-          const activation_token = createActivationToken(newUser);
-          const url = `${CLIENT_URL}/activate/${activation_token}`;
-    
-          if (isEmail) {
-            sendMail(account, url, "Verify your email address");
-          } else if (isPhone) {
-            sendSms(account, url, "Verify your phone number");
-          }
-    
-          res.json({ msg: "Success! Check your email or phone for verification." });
-        } catch (err) {
-          return res.status(500).json({ msg: err.message });
+    try {
+        const { username, account, password } = req.body;
+
+        // Vérifier si le nom d'utilisateur ou l'adresse e-mail existent déjà dans la base de données
+        const existingUser = await Users.findOne({ $or: [{ username }, { account }] });
+        if (existingUser) {
+            const field = existingUser.username === username ? 'nom d\'utilisateur' : 'adresse e-mail';
+            return res.status(400).json({ msg: `Ce ${field} existe déjà.` });
         }
-      },
+
+        if (password.length < 6) {
+            return res.status(400).json({ msg: "Le mot de passe doit contenir au moins 6 caractères." });
+        }
+
+        const passwordHash = await bcrypt.hash(password, 12);
+
+        const newUser = { username, account, password: passwordHash };
+        const activation_token = createActivationToken(newUser);
+        const url = `${CLIENT_URL}/activate/${activation_token}`;
+     sendMail(account, url, "Vérifiez votre adresse e-mail");
+
+     res.json({msg: `Inscription réussie, Nous avons envoyé un lien de vérification à ${account}, Veuillez vérifier votre courrier électronique pour la prochaine étape.`})      } catch (err) {
+        return res.status(500).json({ msg: err.message });
+    }
+},
+
+
+
  
-  activeAccount: async (req, res) => {
-    try {
-      const { active_token } = req.body;
+activateEmail: async (req, res) => {
+  try {
+      const {activation_token} = req.body
+      const user = jwt.verify(activation_token, process.env.ACTIVATION_TOKEN_SECRET)
 
-      // Verificar el token y obtener los datos decodificados
-      const decoded = jwt.verify(active_token, process.env.ACTIVE_TOKEN_SECRET);
+      const {username, account, password} = user
 
-      if (!decoded || !decoded.newUser) {
-        return res.status(400).json({ msg: "Invalid authentication." });
-      }
+      const check = await Users.findOne({account})
+      if(check) return res.status(400).json({msg:"This account already exists."})
 
-      const { newUser } = decoded;
+      const newUser = new Users({
+          username, account, password
+      })
 
-      // Verificar si la cuenta ya existe
-      const existingUser = await Users.findOne({ account: newUser.account });
-      if (existingUser) {
-        return res.status(400).json({ msg: "Account already exists." });
-      }
+      await newUser.save()
 
-      // Crear y guardar el nuevo usuario
-      const user = new Users(newUser);
-      await user.save();
+      res.json({msg: "Account has been activated!"})
 
-      res.json({ msg: "Account has been activated!" });
+  } catch (err) {
+      return res.status(500).json({msg: err.message})
+  }
+},
 
-    } catch (err) {
-      return res.status(500).json({ msg: err.message });
+ login : async (req, res) => {
+  try {
+    const { account, password } = req.body;
+
+    // Encuentra el usuario por su cuenta
+    const user = await Users.findOne({ account });
+    if (!user) {
+      return res.status(400).json({ msg: "Esta cuenta no existe." });
     }
-  },
 
-  login: async (req, res) => {
-    try {
-      const { account, password } = req.body;
-
-      // Buscar usuario por cuenta (correo electrónico o número de teléfono)
-      const user = await Users.findOne({ account });
-
-      // Si el usuario no existe, devuelve un error
-      if (!user) {
-        return res.status(400).json({ msg: 'This account does not exist.' });
-      }
-
-      // Si el usuario existe, verifica la contraseña y genera el token de sesión
-      await loginUser(user, password, res);
-
-    } catch (err) {
-      // En caso de error, devuelve una respuesta con el mensaje del error
-      return res.status(500).json({ msg: err.message });
+    // Compara la contraseña proporcionada con la almacenada
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ msg: "Contraseña incorrecta." });
     }
-  },
 
+    // Crea el access token y refresh token
+    const access_token = createAccessToken({id: user._id})
+    const refresh_token = createRefreshToken({id: user._id})
+
+
+    // Envía el refresh token como cookie
+    res.cookie('refreshtoken', refresh_token, {
+      httpOnly: true,
+      path: '/api/refresh_token',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
+    });
+
+    // Devuelve el access token y el usuario en la respuesta JSON
+    res.json({
+      msg: "Inicio de sesión exitoso.",
+      access_token,
+      user,
+    });
+
+  } catch (err) {
+    // Maneja errores y devuelve una respuesta adecuada
+    res.status(500).json({ msg: err.message || "Error del servidor." });
+  }
+},
   googleLogin: async (req, res) => {
     try {
       const { id_token } = req.body;
@@ -131,7 +121,7 @@ const authCtrl = {
       const {
         email,
         email_verified,
-        username,
+        name,
         picture
       } = verify.getPayload(); // obtener la información del usuario
 
@@ -153,7 +143,7 @@ const authCtrl = {
       } else {
         // Si el usuario no existe, regístralo
         const newUser = {
-          username,
+          name,
           account: email,
           password: passwordHash,
           avatar: picture,
@@ -215,45 +205,13 @@ const authCtrl = {
       return res.status(500).json({ msg: err.message });
     }
   },
-
-
-  loginUser: async (user, password, res) => {
-    // Comprobar si la contraseña es correcta
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      const msgError =
-        user.type === 'register'
-          ? 'Password is incorrect.'
-          : `Password is incorrect. This account login with ${user.type}.`;
-
-      return res.status(400).json({ msg: msgError });
-    }
-
-    // Generar tokens de acceso y actualización
-    const access_token = generateAccessToken({ id: user._id });
-    const refresh_token = generateRefreshToken({ id: user._id }, res);
-
-    // Guardar el token de actualización en la base de datos
-    await Users.findByIdAndUpdate(user._id, {
-      rf_token: refresh_token,
-    });
-
-    // Respuesta de éxito
-    res.json({
-      msg: 'Login Success!',
-      access_token,
-      user: { ...user.toObject(), password: '' },
-    });
-  },
-
-  // Función para registrar un nuevo usuario
+ 
   registerUser: async (user, res) => {
     const newUser = new Users(user);
 
     // Generar tokens de acceso y actualización
-    const access_token = generateAccessToken({ id: newUser._id });
-    const refresh_token = generateRefreshToken({ id: newUser._id }, res);
+    const access_token = createAccessToken({id: user._id})
+    const refresh_token = createRefreshToken({id: user._id})
 
     // Guardar el token de actualización en el nuevo usuario
     newUser.rf_token = refresh_token;
@@ -269,7 +227,7 @@ const authCtrl = {
 
 
 
-
+ 
   forgotPassword: async (req, res) => {
     try {
       const { account } = req.body;
@@ -320,16 +278,15 @@ const authCtrl = {
 
 
 
-
   logout: async (req, res) => {
     try {
-      res.clearCookie('refreshtoken', { path: '/api/refresh_token' })
-      return res.json({ msg: "Vous êtes déconnecté!" })
+        res.clearCookie('refreshtoken', {path: '/api/refresh_token'})
+        return res.json({msg: "Vous êtes déconnecté!"})
     } catch (err) {
-      return res.status(500).json({ msg: err.message })
+        return res.status(500).json({msg: err.message})
     }
-
-  },
+    
+},
 
 
 

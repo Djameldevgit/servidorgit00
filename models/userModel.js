@@ -13,13 +13,7 @@ const userSchema = new mongoose.Schema({
     },
 
 
-
-   
-
-    refreshToken: {
-        type: String
-      },
-
+ 
 
     username: { 
         type: String,

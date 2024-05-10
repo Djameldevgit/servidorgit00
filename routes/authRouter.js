@@ -15,7 +15,7 @@ router.post('/refresh_token', authCtrl.generateAccessToken)
  router.post('/login_sms', authCtrl.loginSMS)
  router.post('/sms_verify', authCtrl.smsVerify)
 
-router.post('/activation', authCtrl.activeAccount);
+router.post('/activation', authCtrl.activateEmail);
 router.post('/forgot', authCtrl.forgotPassword)
 router.post('/reset', auth, authCtrl.resetPassword)
 
