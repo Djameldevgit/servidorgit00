@@ -17,96 +17,91 @@ const authCtrl = {
 
   register: async (req, res) => {
     try {
-        const { username, account, password } = req.body;
+      const { username, account, password } = req.body;
 
-        // Vérifier si le nom d'utilisateur ou l'adresse e-mail existent déjà dans la base de données
-        const existingUser = await Users.findOne({ $or: [{ username }, { account }] });
-        if (existingUser) {
-            const field = existingUser.username === username ? 'nom d\'utilisateur' : 'adresse e-mail';
-            return res.status(400).json({ msg: `Ce ${field} existe déjà.` });
-        }
+      // Vérifier si le nom d'utilisateur ou l'adresse e-mail existent déjà dans la base de données
+      const existingUser = await Users.findOne({ $or: [{ username }, { account }] });
+      if (existingUser) {
+        const field = existingUser.username === username ? 'nom d\'utilisateur' : 'adresse e-mail';
+        return res.status(400).json({ msg: `Ce ${field} existe déjà.` });
+      }
 
-        if (password.length < 6) {
-            return res.status(400).json({ msg: "Le mot de passe doit contenir au moins 6 caractères." });
-        }
+      if (password.length < 6) {
+        return res.status(400).json({ msg: "Le mot de passe doit contenir au moins 6 caractères." });
+      }
 
-        const passwordHash = await bcrypt.hash(password, 12);
+      const passwordHash = await bcrypt.hash(password, 12);
 
-        const newUser = { username, account, password: passwordHash };
-        const activation_token = createActivationToken(newUser);
-        const url = `${CLIENT_URL}/activate/${activation_token}`;
-     sendMail(account, url, "Vérifiez votre adresse e-mail");
+      const newUser = { username, account, password: passwordHash };
+      const activation_token = createActivationToken(newUser);
+      const url = `${CLIENT_URL}/activate/${activation_token}`;
+      sendMail(account, url, "Vérifiez votre adresse e-mail");
 
-     res.json({msg: `Inscription réussie, Nous avons envoyé un lien de vérification à ${account}, Veuillez vérifier votre courrier électronique pour la prochaine étape.`})      } catch (err) {
-        return res.status(500).json({ msg: err.message });
+      res.json({ msg: `Inscription réussie, Nous avons envoyé un lien de vérification à ${account}, Veuillez vérifier votre courrier électronique pour la prochaine étape.` })
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
     }
-},
+  },
 
 
 
- 
-activateEmail: async (req, res) => {
-  try {
-      const {activation_token} = req.body
+
+  activateEmail: async (req, res) => {
+    try {
+      const { activation_token } = req.body
       const user = jwt.verify(activation_token, process.env.ACTIVATION_TOKEN_SECRET)
 
-      const {username, account, password} = user
+      const { username, account, password } = user
 
-      const check = await Users.findOne({account})
-      if(check) return res.status(400).json({msg:"This account already exists."})
+      const check = await Users.findOne({ account })
+      if (check) return res.status(400).json({ msg: "This account already exists." })
 
       const newUser = new Users({
-          username, account, password
+        username, account, password
       })
 
       await newUser.save()
 
-      res.json({msg: "Account has been activated!"})
+      res.json({ msg: "Account has been activated!" })
 
-  } catch (err) {
-      return res.status(500).json({msg: err.message})
-  }
-},
-
- login : async (req, res) => {
-  try {
-    const { account, password } = req.body;
-
-    // Encuentra el usuario por su cuenta
-    const user = await Users.findOne({ account });
-    if (!user) {
-      return res.status(400).json({ msg: "Esta cuenta no existe." });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message })
     }
+  },
 
-    // Compara la contraseña proporcionada con la almacenada
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ msg: "Contraseña incorrecta." });
+
+  login: async (req, res) => {
+    try {
+        const { account, password } = req.body
+
+        const user = await Users.findOne({account})
+        .populate("followers following", "avatar username fullname followers following")
+
+        if(!user) return res.status(400).json({msg: "Cet account n'existe pas."})
+
+        const isMatch = await bcrypt.compare(password, user.password)
+        if(!isMatch) return res.status(400).json({msg: "Le mot de passe est incorrect."})
+
+        const access_token = createAccessToken({id: user._id})
+        const refresh_token = createRefreshToken({id: user._id})
+
+        res.cookie('refreshtoken', refresh_token, {
+            httpOnly: true,
+            path: '/api/refresh_token',
+            maxAge: 30*24*60*60*1000 // 30days
+        })
+
+        res.json({
+            msg: 'Login Success!',
+            access_token,
+            user: {
+                ...user._doc,
+                password: ''
+            }
+        })
+    } catch (err) {
+        return res.status(500).json({msg: err.message})
     }
-
-    // Crea el access token y refresh token
-    const access_token = createAccessToken({id: user._id})
-    const refresh_token = createRefreshToken({id: user._id})
-
-
-    // Envía el refresh token como cookie
-    res.cookie('refreshtoken', refresh_token, {
-      httpOnly: true,
-      path: '/api/refresh_token',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
-    });
-
-    // Devuelve el access token y el usuario en la respuesta JSON
-    res.json({
-      msg: "Inicio de sesión exitoso.",
-      access_token,
-      user,
-    });
-
-  } catch (err) {
-    // Maneja errores y devuelve una respuesta adecuada
-    res.status(500).json({ msg: err.message || "Error del servidor." });
-  }
 },
   googleLogin: async (req, res) => {
     try {
@@ -205,13 +200,13 @@ activateEmail: async (req, res) => {
       return res.status(500).json({ msg: err.message });
     }
   },
- 
+
   registerUser: async (user, res) => {
     const newUser = new Users(user);
 
     // Generar tokens de acceso y actualización
-    const access_token = createAccessToken({id: user._id})
-    const refresh_token = createRefreshToken({id: user._id})
+    const access_token = createAccessToken({ id: user._id })
+    const refresh_token = createRefreshToken({ id: user._id })
 
     // Guardar el token de actualización en el nuevo usuario
     newUser.rf_token = refresh_token;
@@ -227,7 +222,7 @@ activateEmail: async (req, res) => {
 
 
 
- 
+
   forgotPassword: async (req, res) => {
     try {
       const { account } = req.body;
@@ -280,42 +275,44 @@ activateEmail: async (req, res) => {
 
   logout: async (req, res) => {
     try {
-        res.clearCookie('refreshtoken', {path: '/api/refresh_token'})
-        return res.json({msg: "Vous êtes déconnecté!"})
-    } catch (err) {
-        return res.status(500).json({msg: err.message})
-    }
-    
-},
-
-
-
-  generateAccessToken: async (req, res) => {//ciuando se ejecuta este controladror desde la accion clinete que ejecuta el refrechtocken
-    try {
-      const rf_token = req.cookies.refreshtoken  //se obtiene rf_token desde res.cookies.refreshtoken
-      if (!rf_token) return res.status(400).json({ msg: "Veuillez vous connecter maintenant." })  //si no se envuentra el rf_token es porque el usuario no ha iniciado sesion y por eso el navigador no ha guardado el ccokies
-
-      jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET, async (err, result) => {//aqui se toma trea parametros el ultmo paramentro el la funcion asincrona el cual se usa mucho en  operaciones asincronas
-        if (err) return res.status(400).json({ msg: "Veuillez vous connecter maintenant." })
-
-        const user = await Users.findById(result.id).select("-password")//la busqueda del usuario por id es igual como usamos _id
-          .populate('followers following', 'avatar username fullname followers following')
-
-        if (!user) return res.status(400).json({})
-
-        const access_token = createAccessToken({ id: result.id })// reslt.id para referirse al identificador único del usuario en el contexto de Mongoose. Luego, este identificador único se utiliza para crear un nuevo token de acceso mediante la función createAccessToken, que probablemente incluya este identificador en el token.
-
-        res.json({//Después de generar el token de acceso, se devuelve una respuesta JSON al cliente que contiene tanto el token de acceso como los datos del usuario encontrado en la base de datos. Esto permite que el cliente pueda utilizar el token de acceso para autenticar las solicitudes futuras y acceder a recursos protegidos en la aplicación, y también tenga acceso a los datos del usuario para mostrar la información correspondiente en la interfaz de usuario.
-          access_token,
-          user
-        })
-      })
-
+      res.clearCookie('refreshtoken', { path: '/api/refresh_token' })
+      return res.json({ msg: "Vous êtes déconnecté!" })
     } catch (err) {
       return res.status(500).json({ msg: err.message })
     }
-  }
+
+  },
+
+
+
+ 
+  generateAccessToken: async (req, res) => {//ciuando se ejecuta este controladror desde la accion clinete que ejecuta el refrechtocken
+    try {
+        const rf_token = req.cookies.refreshtoken  //se obtiene rf_token desde res.cookies.refreshtoken
+        if(!rf_token) return res.status(400).json({msg: "Veuillez vous connecter maintenant."})  //si no se envuentra el rf_token es porque el usuario no ha iniciado sesion y por eso el navigador no ha guardado el ccokies
+
+        jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET, async(err, result) => {//aqui se toma trea parametros el ultmo paramentro el la funcion asincrona el cual se usa mucho en  operaciones asincronas
+            if(err) return res.status(400).json({msg: "Veuillez vous connecter maintenant."})
+
+            const user = await Users.findById(result.id).select("-password")//la busqueda del usuario por id es igual como usamos _id
+            .populate('followers following', 'avatar username fullname followers following')
+
+            if(!user) return res.status(400).json({})
+
+            const access_token = createAccessToken({id: result.id})// reslt.id para referirse al identificador único del usuario en el contexto de Mongoose. Luego, este identificador único se utiliza para crear un nuevo token de acceso mediante la función createAccessToken, que probablemente incluya este identificador en el token.
+
+            res.json({//Después de generar el token de acceso, se devuelve una respuesta JSON al cliente que contiene tanto el token de acceso como los datos del usuario encontrado en la base de datos. Esto permite que el cliente pueda utilizar el token de acceso para autenticar las solicitudes futuras y acceder a recursos protegidos en la aplicación, y también tenga acceso a los datos del usuario para mostrar la información correspondiente en la interfaz de usuario.
+                access_token,
+                user
+            })
+        })
+        
+    } catch (err) {
+        return res.status(500).json({msg: err.message})
+    }
 }
+}
+ 
 
 const createActivationToken = (payload) => {
   return jwt.sign(payload, process.env.ACTIVATION_TOKEN_SECRET, { expiresIn: '20m' })
