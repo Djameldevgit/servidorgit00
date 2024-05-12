@@ -18,73 +18,35 @@ class APIfeatures {
 }
 
 const postCtrl = {
- 
- 
-  /*  searchPosts: async (req, res) => {
+  
+
+    createPostPendiente: async (req, res) => {
         try {
-            const { content } = req.query;
-            console.log('Query parameters:', req.query); // Verifica los parámetros de la consulta
-            console.log('Content:', content); // Verifica el valor de content
-    
-            let query = { estado: 'aprovado' };
-    
-            if (content) {
-                query.content = content;
+            const {  content,direcion,wilaya,commune,specifications,discripcion,pricesala,dinero,negociable,nomprenom,telefono,email,web,informacion,comentarios , images } = req.body;
+            
+            if (images.length === 0) {
+                return res.status(400).json({ msg: "Veuillez ajouter votre photo." });
             }
-            console.log('Query:', query); // Verifica la consulta construida
     
-            const features = new APIfeatures(Posts.find(query), req.query).paginating();
+            const newPost = new Posts({
+                 estado: 'pendiente', content,direcion,wilaya,commune,specifications,discripcion,pricesala,dinero,negociable,nomprenom,telefono,email,web,informacion,comentarios , images,user: req.user._id,
+            });
     
-            const posts = await features.query
-                .sort('-createdAt')
-                .populate("user likes", "avatar username followers")
-                .populate({
-                    path: "comments",
-                    populate: {
-                        path: "user likes",
-                        select: "-password"
-                    }
-                });
-            console.log('Filtered posts:', posts); // Verifica los posts filtrados
+            // Utilizar el modo de preocupación por escritura 'majority'
+            await newPost.save({ writeConcern: { w: "majority" } });  
     
             res.json({
-                msg: 'Success!',
-                result: posts.length,
-                posts
+                msg: "Votre publication 'Salle des fêtes' a été créée et envoyée aux administrateurs pour validation ultérieure. Dans tous les cas nous vous envoyons une notification !",
+                newPost: {
+                    ...newPost._doc,
+                    user: req.user,
+                }
             });
         } catch (err) {
-            console.error('Error:', err); // Maneja los errores y registra el mensaje de error
             return res.status(500).json({ msg: err.message });
         }
     },
-    */
-
-createPostPendiente: async (req, res) => {
-
-    try {
-        const {  content,direcion,wilaya,commune,specifications,discripcion,pricesala,dinero,negociable,nomprenom,telefono,email,web,informacion,comentarios , images } = req.body;
-        
-        if (images.length === 0) {
-            return res.status(400).json({ msg: "Veuillez ajouter votre photo." });
-        }
-
-        const newPost = new Posts({
-             estado: 'pendiente', content,direcion,wilaya,commune,specifications,discripcion,pricesala,dinero,negociable,nomprenom,telefono,email,web,informacion,comentarios , images,user: req.user._id,
-        });
-
-        await newPost.save();  
-
-        res.json({
-            msg: "Votre publication 'Salle des fêtes' a été créée et envoyée aux administrateurs pour validation ultérieure. Dans tous les cas nous vous envoyons une notification !",
-            newPost: {
-                ...newPost._doc,
-                user: req.user,
-            }
-        });
-    } catch (err) {
-        return res.status(500).json({ msg: err.message });
-    }
-},
+    
 
 
 

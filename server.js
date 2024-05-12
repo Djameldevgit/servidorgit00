@@ -39,15 +39,14 @@ const app = express()
 
 app.use(express.json())
 
-  //app.use(cors())
-  app.use(cors({
+ //app.use(cors())
+   app.use(cors({
   origin: process.env.CLIENT_URL,
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // Métodos permitidos
   allowedHeaders: ["Content-Type", "Authorization"], // Encabezados permitidos
-}));
-
-
+})); 
+ 
 
 
 app.use(cookieParser())
