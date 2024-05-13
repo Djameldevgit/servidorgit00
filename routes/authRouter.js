@@ -13,6 +13,6 @@ router.post('/forgot', authCtrl.forgotPassword);
 router.post('/reset', auth, authCtrl.resetPassword);
 
 // Añadir una ruta para manejar solicitudes GET a /api/refresh_token
-router.get('/refresh_token', authCtrl.generateAccessToken);
+router.get('/api/refresh_token', authCtrl.generateAccessToken);
 
 module.exports = router;
