@@ -72,37 +72,37 @@ const authCtrl = {
 
   login: async (req, res) => {
     try {
-        const { account, password } = req.body
+      const { account, password } = req.body
 
-        const user = await Users.findOne({account})
+      const user = await Users.findOne({ account })
         .populate("followers following", "avatar username fullname followers following")
 
-        if(!user) return res.status(400).json({msg: "Cet account n'existe pas."})
+      if (!user) return res.status(400).json({ msg: "Cet account n'existe pas." })
 
-        const isMatch = await bcrypt.compare(password, user.password)
-        if(!isMatch) return res.status(400).json({msg: "Le mot de passe est incorrect."})
+      const isMatch = await bcrypt.compare(password, user.password)
+      if (!isMatch) return res.status(400).json({ msg: "Le mot de passe est incorrect." })
 
-        const access_token = createAccessToken({id: user._id})
-        const refresh_token = createRefreshToken({id: user._id})
+      const access_token = createAccessToken({ id: user._id })
+      const refresh_token = createRefreshToken({ id: user._id })
 
-        res.cookie('refreshtoken', refresh_token, {
-            httpOnly: true,
-            path: '/api/refresh_token',
-            maxAge: 30*24*60*60*1000 // 30days
-        })
+      res.cookie('refreshtoken', refresh_token, {
+        httpOnly: true,
+        path: '/api/refresh_token',
+        maxAge: 30 * 24 * 60 * 60 * 1000 // 30days
+      })
 
-        res.json({
-            msg: 'Login Success!',
-            access_token,
-            user: {
-                ...user._doc,
-                password: ''
-            }
-        })
+      res.json({
+        msg: 'Login Success!',
+        access_token,
+        user: {
+          ...user._doc,
+          password: ''
+        }
+      })
     } catch (err) {
-        return res.status(500).json({msg: err.message})
+      return res.status(500).json({ msg: err.message })
     }
-},
+  },
   googleLogin: async (req, res) => {
     try {
       const { id_token } = req.body;
@@ -285,23 +285,23 @@ const authCtrl = {
 
 
 
- 
-  generateAccessToken: async (req, res) => {//ciuando se ejecuta este controladror desde la accion clinete que ejecuta el refrechtocken
+
+  generateAccessToken: async (req, res) => {
     try {
-        const rf_token = req.cookies.refreshtoken  //se obtiene rf_token desde res.cookies.refreshtoken
-        if(!rf_token) return res.status(400).json({msg: "Veuillez vous connecter maintenant."})  //si no se envuentra el rf_token es porque el usuario no ha iniciado sesion y por eso el navigador no ha guardado el ccokies
+        const rf_token = req.cookies.refreshtoken
+        if(!rf_token) return res.status(400).json({msg: "Please login now."})
 
-        jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET, async(err, result) => {//aqui se toma trea parametros el ultmo paramentro el la funcion asincrona el cual se usa mucho en  operaciones asincronas
-            if(err) return res.status(400).json({msg: "Veuillez vous connecter maintenant."})
+        jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET, async(err, result) => {
+            if(err) return res.status(400).json({msg: "Please login now."})
 
-            const user = await Users.findById(result.id).select("-password")//la busqueda del usuario por id es igual como usamos _id
+            const user = await Users.findById(result.id).select("-password")
             .populate('followers following', 'avatar username fullname followers following')
 
-            if(!user) return res.status(400).json({})
+            if(!user) return res.status(400).json({msg: "This does not exist."})
 
-            const access_token = createAccessToken({id: result.id})// reslt.id para referirse al identificador único del usuario en el contexto de Mongoose. Luego, este identificador único se utiliza para crear un nuevo token de acceso mediante la función createAccessToken, que probablemente incluya este identificador en el token.
+            const access_token = createAccessToken({id: result.id})
 
-            res.json({//Después de generar el token de acceso, se devuelve una respuesta JSON al cliente que contiene tanto el token de acceso como los datos del usuario encontrado en la base de datos. Esto permite que el cliente pueda utilizar el token de acceso para autenticar las solicitudes futuras y acceder a recursos protegidos en la aplicación, y también tenga acceso a los datos del usuario para mostrar la información correspondiente en la interfaz de usuario.
+            res.json({
                 access_token,
                 user
             })
@@ -312,7 +312,7 @@ const authCtrl = {
     }
 }
 }
- 
+
 
 const createActivationToken = (payload) => {
   return jwt.sign(payload, process.env.ACTIVATION_TOKEN_SECRET, { expiresIn: '20m' })
