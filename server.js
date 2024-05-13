@@ -37,7 +37,7 @@ i18next
 const app = express()
 
 
-app.use(express.json())
+app.use(express.json())//express.json() para analizar JSON en las solicitudes, cors para manejar el acceso a recursos de diferentes orígene
 
  //app.use(cors())
    app.use(cors({
