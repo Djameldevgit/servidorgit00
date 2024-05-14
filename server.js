@@ -41,12 +41,12 @@ app.use(express.json())
 
  //app.use(cors())
   
-   app.use(cors({
-  origin: process.env.REACT_APP_API_URL,
+ app.use(cors({
+  origin: 'https://clienterender.onrender.com',
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // Métodos permitidos
   allowedHeaders: ["Content-Type", "Authorization"], // Encabezados permitidos
-}));  
+}));
  
 
 
