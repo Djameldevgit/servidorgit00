@@ -11,7 +11,7 @@ const { google } = require('googleapis')
 const { OAuth2 } = google.auth
 const fetch = require('node-fetch')
 const client = new OAuth2(process.env.MAILING_SERVICE_CLIENT_ID)
-const { CLIENT_URL } = process.env
+const { REACT_APP_API_URL } = process.env
 
 const authCtrl = {
 
@@ -34,7 +34,7 @@ const authCtrl = {
 
       const newUser = { username, account, password: passwordHash };
       const activation_token = createActivationToken(newUser);
-      const url = `${CLIENT_URL}/activate/${activation_token}`;
+      const url = `${REACT_APP_API_URL}/activate/${activation_token}`;
       sendMail(account, url, "Vérifiez votre adresse e-mail");
 
       res.json({ msg: `Inscription réussie, Nous avons envoyé un lien de vérification à ${account}, Veuillez vérifier votre courrier électronique pour la prochaine étape.` })
