@@ -37,15 +37,16 @@ i18next
 const app = express()
 
 
-app.use(express.json())//express.json() para analizar JSON en las solicitudes, cors para manejar el acceso a recursos de diferentes orígene
+app.use(express.json()) 
 
  //app.use(cors())
+  
    app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: process.env.REACT_APP_API_URL,
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // Métodos permitidos
   allowedHeaders: ["Content-Type", "Authorization"], // Encabezados permitidos
-})); 
+}));  
  
 
 
