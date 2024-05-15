@@ -40,7 +40,7 @@ const app = express()
 app.use(express.json()) 
 
  //app.use(cors())
- 
+ app.use(cookieParser())
  app.use(cors({
   origin: 'https://clienterender.onrender.com',
   credentials: true,
@@ -49,7 +49,7 @@ app.use(express.json())
  
  
 
-app.use(cookieParser())
+
  
 // Socket
 const http = require('http').createServer(app)
