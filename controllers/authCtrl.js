@@ -82,8 +82,8 @@ const authCtrl = {
       const isMatch = await bcrypt.compare(password, user.password)
       if (!isMatch) return res.status(400).json({ msg: "Le mot de passe est incorrect." })
 
-      const access_token = createAccessToken({id: newUser._id})
-            const refresh_token = createRefreshToken({id: newUser._id})
+      const access_token = createAccessToken({id: user._id})
+            const refresh_token = createRefreshToken({id: user._id})
 
     
       res.cookie('refreshtoken', refresh_token, {
