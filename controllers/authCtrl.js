@@ -11,8 +11,8 @@ const { google } = require('googleapis')
 const { OAuth2 } = google.auth
 const fetch = require('node-fetch')
 const client = new OAuth2(process.env.MAILING_SERVICE_CLIENT_ID)
-const { REACT_APP_API_URL } = process.env
-
+const { REACT_APP_API_URL,REFRESH_TOKEN_SECRET } = process.env
+ 
 const authCtrl = {
 
   register: async (req, res) => {
@@ -88,6 +88,7 @@ const authCtrl = {
     
       res.cookie('refreshtoken', refresh_token, {
         httpOnly: true,
+         
         path: '/api/refresh_token',
         maxAge: 30*24*60*60*1000 // 30days
     })
