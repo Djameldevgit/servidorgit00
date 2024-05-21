@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
+const cors = require('cors'); 
 const cookieParser = require('cookie-parser');
 const SocketServer = require('./socketServer');
 const { ExpressPeerServer } = require('peer');
@@ -31,24 +31,23 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({//https://clienterender.onrender.com
+
+app.use(cors({ 
   origin: 'https://clienterender.onrender.com',
+    methods: ['GET', 'POST', 'PUT','PATCH','DELETE'],
+    allowedHeaders: ['Authorization'],
   credentials: true,
 }));
 
-// Socket
+ 
 const http = require('http').createServer(app);
 const io = require('socket.io')(http, {
-  cors: {//https://clienterender.onrender.com
+  cors: { 
     origin: 'https://clienterender.onrender.com',
     methods: ['GET', 'POST', 'PUT','PATCH','DELETE'],
     allowedHeaders: ['Authorization'],
     credentials: true
   }
-});
-
-io.on('connection', socket => {
-    SocketServer(socket);
 });
 
 // Create peer server
