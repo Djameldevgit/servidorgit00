@@ -34,8 +34,7 @@ app.use(cookieParser());
 
 app.use(cors({ 
   origin: 'https://clienterender.onrender.com',
-    methods: ['GET', 'POST', 'PUT','PATCH','DELETE'],
-    allowedHeaders: ['Authorization'],
+  
   credentials: true,
 }));
 
@@ -44,8 +43,7 @@ const http = require('http').createServer(app);
 const io = require('socket.io')(http, {
   cors: { 
     origin: 'https://clienterender.onrender.com',
-    methods: ['GET', 'POST', 'PUT','PATCH','DELETE'],
-    allowedHeaders: ['Authorization'],
+  
     credentials: true
   }
 });
