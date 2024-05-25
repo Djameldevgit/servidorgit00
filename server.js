@@ -9,8 +9,11 @@ const path = require('path');
 const i18next = require('i18next');
 const i18nextMiddleware = require('i18next-http-middleware');
 const app = express();
+
+// Configurar JSON middleware
 app.use(express.json());
 
+// Configuración de i18next
 i18next
   .use(i18nextMiddleware.LanguageDetector)
   .init({
@@ -19,37 +22,36 @@ i18next
       en: {
         translation: require(path.join(__dirname, 'locales', 'en.json')),
       },
-
       fr: {
         translation: require(path.join(__dirname, 'locales', 'fr.json')),
       },
-
       ar: {
         translation: require(path.join(__dirname, 'locales', 'ar.json')),
       },
-
-
     },
   });
 
- 
- 
- 
- 
- app.use(cors(corsOptions)); // Aplicar CORS con las opciones definidas
- app.use(cors({
+app.use(i18nextMiddleware.handle(i18next));
+
+// Configuración de CORS
+const corsOptions = {
   origin: process.env.CLIENT_API,
-}));
- 
+  credentials: true, // Para permitir el uso de credenciales
+  optionsSuccessStatus: 200 // Algunos navegadores requieren este status
+};
+app.use(cors(corsOptions));
 
- 
- 
-
+// Configuración de cookie parser
 app.use(cookieParser());
 
 // Configuración de Sockets
 const http = require('http').createServer(app);
-const io = require('socket.io')(http);
+const io = require('socket.io')(http, {
+  cors: {
+    origin: process.env.CLIENT_API,
+    credentials: true
+  }
+});
 
 io.on('connection', (socket) => {
   SocketServer(socket);
@@ -59,18 +61,18 @@ io.on('connection', (socket) => {
 ExpressPeerServer(http, { path: '/' });
 
 // Rutas de tu aplicación
-app.use('/api', require('./routes/mensajesRouter'));
-app.use('/api', require('./routes/languageRouter'));
-app.use('/api', require('./routes/authRouter'));
-app.use('/api', require('./routes/userRouter'));
-app.use('/api', require('./routes/postRouter'));
-app.use('/api', require('./routes/correoRouter'));
-app.use('/api', require('./routes/contadorRouter'));
-app.use('/api', require('./routes/servicioRouter'));
-app.use('/api', require('./routes/postadminRouter'));
-app.use('/api', require('./routes/commentRouter'));
-app.use('/api', require('./routes/notifyRouter'));
-app.use('/api', require('./routes/messageRouter'));
+ 
+app.use('/api/language', require('./routes/languageRouter'));
+app.use('/api/auth', require('./routes/authRouter'));
+app.use('/api/user', require('./routes/userRouter'));
+app.use('/api/post', require('./routes/postRouter'));
+ 
+app.use('/api/contador', require('./routes/contadorRouter'));
+app.use('/api/servicio', require('./routes/servicioRouter'));
+app.use('/api/postadmin', require('./routes/postadminRouter'));
+app.use('/api/comment', require('./routes/commentRouter'));
+app.use('/api/notify', require('./routes/notifyRouter'));
+app.use('/api/message', require('./routes/messageRouter'));
 
 // Conexión a MongoDB
 const URI = process.env.MONGODB_URL;

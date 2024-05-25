@@ -3,108 +3,172 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const sendMail = require('./sendMail')
 const { validPhone, validateAccount } = require('../middleware/vaild')
- 
+
 
 const { sendSms, smsOTP, smsVerify } = require('../config/sendSMS'); // Requiere las funciones de Twilio
 
 const { google } = require('googleapis')
 const { OAuth2 } = google.auth
 const fetch = require('node-fetch')
-const client = new OAuth2(process.env.MAILING_SERVICE_CLIENT_ID)
-const { CLIENT_API } = process.env
- 
-const authCtrl = {
 
+
+
+
+const client = new OAuth2(process.env.MAILING_SERVICE_CLIENT_ID)
+
+const { CLIENT_URL } = process.env
+const authCtrl = {
+  register: async (req, res) => {
+        try {
+          const { username, account, password } = req.body;
+    
+          // Validación para el campo `account` (puede ser email o teléfono)
+          if (!account) {
+            return res.status(400).json({ msg: "Please add your email or phone." });
+          }
+    
+          const isEmail = validateAccount(account);
+          const isPhone = validPhone(account);
+    
+          if (!isEmail && !isPhone) {
+            return res.status(400).json({ msg: "The email or phone number format is incorrect." });
+          }
+    
+          // Verificar si `account` ya existe
+          const existingUser = await Users.findOne({ account });
+          if (existingUser) {
+            return res.status(400).json({ msg: `This account already exists.` });
+          }
+    
+          if (password.length < 6) {
+            return res.status(400).json({ msg: "Password must be at least 6 chars." });
+          }
+    
+          const passwordHash = await bcrypt.hash(password, 12);
+    
+          const newUser = {
+            username,
+            account,
+            password: passwordHash,
+          };
+    
+          const activation_token = createActivationToken(newUser);
+          const url = `${CLIENT_URL}/activate/${activation_token}`;
+    
+          if (isEmail) {
+            sendMail(account, url, "Verify your email address");
+          } else if (isPhone) {
+            sendSms(account, url, "Verify your phone number");
+          }
+    
+          res.json({ msg: "Success! Check your email or phone for verification." });
+        } catch (err) {
+          return res.status(500).json({ msg: err.message });
+        }
+      },
+
+/*
   register: async (req, res) => {
     try {
       const { username, account, password } = req.body;
 
-      // Vérifier si le nom d'utilisateur ou l'adresse e-mail existent déjà dans la base de données
-      const existingUser = await Users.findOne({ $or: [{ username }, { account }] });
+      // Validación para el campo `account` (puede ser email o teléfono)
+      if (!account) {
+        return res.status(400).json({ msg: "Please add your email or phone." });
+      }
+
+      const isEmail = validateEmail(account);
+      const isPhone = validPhone(account);
+
+      if (!isEmail && !isPhone) {
+        return res.status(400).json({ msg: "The email or phone number format is incorrect." });
+      }
+
+      // Verificar si `account` ya existe
+      const existingUser = await Users.findOne({ account });
       if (existingUser) {
-        const field = existingUser.username === username ? 'nom d\'utilisateur' : 'adresse e-mail';
-        return res.status(400).json({ msg: `Ce ${field} existe déjà.` });
+        return res.status(400).json({ msg: `This account already exists.` });
       }
 
       if (password.length < 6) {
-        return res.status(400).json({ msg: "Le mot de passe doit contenir au moins 6 caractères." });
+        return res.status(400).json({ msg: "Password must be at least 6 chars." });
       }
 
       const passwordHash = await bcrypt.hash(password, 12);
 
-      const newUser = { username, account, password: passwordHash };
-      const activation_token = createActivationToken(newUser);
-      const url = `${CLIENT_API}/activate/${activation_token}`;
-      sendMail(account, url, "Vérifiez votre adresse e-mail");
+      const newUser = {
+        username,
+        account,
+        password: passwordHash,
+      };
 
-      res.json({ msg: `Inscription réussie, Nous avons envoyé un lien de vérification à ${account}, Veuillez vérifier votre courrier électronique pour la prochaine étape.` })
+      const activation_token = createActivationToken(newUser);
+      const url = `${CLIENT_URL}/activate/${activation_token}`;
+
+      if (isEmail) {
+        sendMail(account, url, "Verify your email address");
+      } else if (isPhone) {
+        sendSms(account, url, "Verify your phone number");
+      }
+
+      res.json({ msg: "Success! Check your email or phone for verification." });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
   },
 
-
-
-
-  activateEmail: async (req, res) => {
+*/
+  activeAccount: async (req, res) => {
     try {
-      const { activation_token } = req.body
-      const user = jwt.verify(activation_token, process.env.ACTIVATION_TOKEN_SECRET)
+      const { active_token } = req.body;
 
-      const { username, account, password } = user
+      // Verificar el token y obtener los datos decodificados
+      const decoded = jwt.verify(active_token, process.env.ACTIVE_TOKEN_SECRET);
 
-      const check = await Users.findOne({ account })
-      if (check) return res.status(400).json({ msg: "This account already exists." })
+      if (!decoded || !decoded.newUser) {
+        return res.status(400).json({ msg: "Invalid authentication." });
+      }
 
-      const newUser = new Users({
-        username, account, password
-      })
+      const { newUser } = decoded;
 
-      await newUser.save()
+      // Verificar si la cuenta ya existe
+      const existingUser = await Users.findOne({ account: newUser.account });
+      if (existingUser) {
+        return res.status(400).json({ msg: "Account already exists." });
+      }
 
-      res.json({ msg: "Account has been activated!" })
+      // Crear y guardar el nuevo usuario
+      const user = new Users(newUser);
+      await user.save();
+
+      res.json({ msg: "Account has been activated!" });
 
     } catch (err) {
-      return res.status(500).json({ msg: err.message })
+      return res.status(500).json({ msg: err.message });
     }
   },
-
 
   login: async (req, res) => {
     try {
-      const { account, password } = req.body
+      const { account, password } = req.body;
 
-      const user = await Users.findOne({ account })
-        .populate("followers following", "avatar username fullname followers following")
+      // Buscar usuario por cuenta (correo electrónico o número de teléfono)
+      const user = await Users.findOne({ account });
 
-      if (!user) return res.status(400).json({ msg: "Cet account n'existe pas." })
+      // Si el usuario no existe, devuelve un error
+      if (!user) {
+        return res.status(400).json({ msg: 'This account does not exist.' });
+      }
 
-      const isMatch = await bcrypt.compare(password, user.password)
-      if (!isMatch) return res.status(400).json({ msg: "Le mot de passe est incorrect." })
+      // Si el usuario existe, verifica la contraseña y genera el token de sesión
+      await loginUser(user, password, res);
 
-      const access_token = createAccessToken({id: user._id})
-            const refresh_token = createRefreshToken({id: user._id})
-
-    
-      res.cookie('refreshtoken', refresh_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        path: '/api/refresh_token',
-        maxAge: 30*24*60*60*1000 // 30days
-    })
-
-      res.json({
-        msg: 'Login Success!',
-        access_token,
-        user: {
-          ...user._doc,
-          password: ''
-        }
-      })
     } catch (err) {
-      return res.status(500).json({ msg: err.message })
+      // En caso de error, devuelve una respuesta con el mensaje del error
+      return res.status(500).json({ msg: err.message });
     }
   },
+
   googleLogin: async (req, res) => {
     try {
       const { id_token } = req.body;
@@ -203,12 +267,44 @@ const authCtrl = {
     }
   },
 
+
+  loginUser: async (user, password, res) => {
+    // Comprobar si la contraseña es correcta
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      const msgError =
+        user.type === 'register'
+          ? 'Password is incorrect.'
+          : `Password is incorrect. This account login with ${user.type}.`;
+
+      return res.status(400).json({ msg: msgError });
+    }
+
+    // Generar tokens de acceso y actualización
+    const access_token = generateAccessToken({ id: user._id });
+    const refresh_token = generateRefreshToken({ id: user._id }, res);
+
+    // Guardar el token de actualización en la base de datos
+    await Users.findByIdAndUpdate(user._id, {
+      rf_token: refresh_token,
+    });
+
+    // Respuesta de éxito
+    res.json({
+      msg: 'Login Success!',
+      access_token,
+      user: { ...user.toObject(), password: '' },
+    });
+  },
+
+  // Función para registrar un nuevo usuario
   registerUser: async (user, res) => {
     const newUser = new Users(user);
 
     // Generar tokens de acceso y actualización
-    const access_token = createAccessToken({ id: user._id })
-    const refresh_token = createRefreshToken({ id: user._id })
+    const access_token = generateAccessToken({ id: newUser._id });
+    const refresh_token = generateRefreshToken({ id: newUser._id }, res);
 
     // Guardar el token de actualización en el nuevo usuario
     newUser.rf_token = refresh_token;
@@ -275,6 +371,7 @@ const authCtrl = {
 
 
 
+
   logout: async (req, res) => {
     try {
       res.clearCookie('refreshtoken', { path: '/api/refresh_token' })
@@ -287,23 +384,22 @@ const authCtrl = {
 
 
 
-
-  generateAccessToken: async (req, res) => {
+  generateAccessToken: async (req, res) => {//ciuando se ejecuta este controladror desde la accion clinete que ejecuta el refrechtocken
     try {
-      const rf_token = req.cookies.refreshtoken
-      if (!rf_token) return res.status(400).json({ msg: "Please login now." })
+      const rf_token = req.cookies.refreshtoken  //se obtiene rf_token desde res.cookies.refreshtoken
+      if (!rf_token) return res.status(400).json({ msg: "Veuillez vous connecter maintenant." })  //si no se envuentra el rf_token es porque el usuario no ha iniciado sesion y por eso el navigador no ha guardado el ccokies
 
-      jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET, async (err, result) => {
-        if (err) return res.status(400).json({ msg: "Please login now." })
+      jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET, async (err, result) => {//aqui se toma trea parametros el ultmo paramentro el la funcion asincrona el cual se usa mucho en  operaciones asincronas
+        if (err) return res.status(400).json({ msg: "Veuillez vous connecter maintenant." })
 
-        const user = await Users.findById(result.id).select("-password")
+        const user = await Users.findById(result.id).select("-password")//la busqueda del usuario por id es igual como usamos _id
           .populate('followers following', 'avatar username fullname followers following')
 
-        if (!user) return res.status(400).json({ msg: "This does not exist." })
+        if (!user) return res.status(400).json({})
 
-        const access_token = createAccessToken({ id: result.id })
+        const access_token = createAccessToken({ id: result.id })// reslt.id para referirse al identificador único del usuario en el contexto de Mongoose. Luego, este identificador único se utiliza para crear un nuevo token de acceso mediante la función createAccessToken, que probablemente incluya este identificador en el token.
 
-        res.json({
+        res.json({//Después de generar el token de acceso, se devuelve una respuesta JSON al cliente que contiene tanto el token de acceso como los datos del usuario encontrado en la base de datos. Esto permite que el cliente pueda utilizar el token de acceso para autenticar las solicitudes futuras y acceder a recursos protegidos en la aplicación, y también tenga acceso a los datos del usuario para mostrar la información correspondiente en la interfaz de usuario.
           access_token,
           user
         })
@@ -314,7 +410,6 @@ const authCtrl = {
     }
   }
 }
-
 
 const createActivationToken = (payload) => {
   return jwt.sign(payload, process.env.ACTIVATION_TOKEN_SECRET, { expiresIn: '20m' })
