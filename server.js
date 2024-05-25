@@ -31,18 +31,16 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({//https://clienterender.onrender.com
-  origin: 'https://clienterender.onrender.com',
+app.use(cors({ 
+  origin: process.env.CLIENT_API,
   credentials: true,
 }));
 
 // Socket
 const http = require('http').createServer(app);
 const io = require('socket.io')(http, {
-  cors: {//https://clienterender.onrender.com
-    origin: 'https://clienterender.onrender.com',
-    methods: ['GET', 'POST', 'PUT','PATCH','DELETE'],
-    allowedHeaders: ['Authorization'],
+  cors: { 
+    origin: process.env.CLIENT_API,
     credentials: true
   }
 });

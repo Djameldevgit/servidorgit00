@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const sendMail = require('./sendMail')
 const { validPhone, validateAccount } = require('../middleware/vaild')
-
+ 
 
 const { sendSms, smsOTP, smsVerify } = require('../config/sendSMS'); // Requiere las funciones de Twilio
 
@@ -11,7 +11,7 @@ const { google } = require('googleapis')
 const { OAuth2 } = google.auth
 const fetch = require('node-fetch')
 const client = new OAuth2(process.env.MAILING_SERVICE_CLIENT_ID)
-const { REACT_APP_API_URL,REFRESH_TOKEN_SECRET } = process.env
+const { REACT_APP_API_URL } = process.env
  
 const authCtrl = {
 
@@ -88,7 +88,7 @@ const authCtrl = {
     
       res.cookie('refreshtoken', refresh_token, {
         httpOnly: true,
-         
+        secure: process.env.NODE_ENV === 'production',
         path: '/api/refresh_token',
         maxAge: 30*24*60*60*1000 // 30days
     })
@@ -290,7 +290,7 @@ const authCtrl = {
 
   generateAccessToken: async (req, res) => {
     try {
-      const rf_token = req.cookies.G_ENABLED_IDPS
+      const rf_token = req.cookies.refreshtoken
       if (!rf_token) return res.status(400).json({ msg: "Please login now." })
 
       jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET, async (err, result) => {
