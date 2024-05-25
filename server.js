@@ -1,14 +1,15 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors'); 
+const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const SocketServer = require('./socketServer');
 const { ExpressPeerServer } = require('peer');
 const path = require('path');
-
 const i18next = require('i18next');
 const i18nextMiddleware = require('i18next-http-middleware');
+const app = express();
+app.use(express.json());
 
 i18next
   .use(i18nextMiddleware.LanguageDetector)
@@ -18,48 +19,47 @@ i18next
       en: {
         translation: require(path.join(__dirname, 'locales', 'en.json')),
       },
+
       fr: {
         translation: require(path.join(__dirname, 'locales', 'fr.json')),
       },
+
       ar: {
         translation: require(path.join(__dirname, 'locales', 'ar.json')),
       },
+
+
     },
   });
 
-const app = express();
-
-app.use(express.json());
-app.use(cookieParser());
-<<<<<<< HEAD
-app.use(cors({ 
+ 
+ 
+ 
+ 
+ app.use(cors(corsOptions)); // Aplicar CORS con las opciones definidas
+ app.use(cors({
   origin: process.env.CLIENT_API,
-=======
-
-app.use(cors({ 
-  origin: 'https://clienterender.onrender.com',
-  
->>>>>>> e2269ad49a6f7ca064ee0834b6796268c3720fd5
-  credentials: true,
 }));
+ 
 
  
+ 
+
+app.use(cookieParser());
+
+// Configuración de Sockets
 const http = require('http').createServer(app);
-const io = require('socket.io')(http, {
-  cors: { 
-<<<<<<< HEAD
-    origin: process.env.CLIENT_API,
-=======
-    origin: 'https://clienterender.onrender.com',
-  
->>>>>>> e2269ad49a6f7ca064ee0834b6796268c3720fd5
-    credentials: true
-  }
+const io = require('socket.io')(http);
+
+io.on('connection', (socket) => {
+  SocketServer(socket);
 });
 
-// Create peer server
+// Crear servidor Peer
 ExpressPeerServer(http, { path: '/' });
 
+// Rutas de tu aplicación
+app.use('/api', require('./routes/mensajesRouter'));
 app.use('/api', require('./routes/languageRouter'));
 app.use('/api', require('./routes/authRouter'));
 app.use('/api', require('./routes/userRouter'));
@@ -72,25 +72,28 @@ app.use('/api', require('./routes/commentRouter'));
 app.use('/api', require('./routes/notifyRouter'));
 app.use('/api', require('./routes/messageRouter'));
 
+// Conexión a MongoDB
 const URI = process.env.MONGODB_URL;
 mongoose.connect(URI, {
-    useCreateIndex: true,
-    useFindAndModify: false,
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}, err => {
-    if(err) throw err;
-    console.log('Connected to mongodb');
+  useCreateIndex: true,
+  useFindAndModify: false,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}, (err) => {
+  if (err) throw err;
+  console.log('Conexión exitosa a MongoDB');
 });
 
-if(process.env.NODE_ENV === 'production'){
-    app.use(express.static('client/build'));
-    app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
-    });
+// Configuración para producción
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static('client/build'));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
+  });
 }
 
+// Inicio del servidor
 const port = process.env.PORT || 5000;
 http.listen(port, () => {
-    console.log('Server is running on port', port);
+  console.log(`Servidor ejecutándose en el puerto ${port}`);
 });
