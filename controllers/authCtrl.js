@@ -66,58 +66,7 @@ const authCtrl = {
           return res.status(500).json({ msg: err.message });
         }
       },
-
-/*
-  register: async (req, res) => {
-    try {
-      const { username, account, password } = req.body;
-
-      // Validación para el campo `account` (puede ser email o teléfono)
-      if (!account) {
-        return res.status(400).json({ msg: "Please add your email or phone." });
-      }
-
-      const isEmail = validateEmail(account);
-      const isPhone = validPhone(account);
-
-      if (!isEmail && !isPhone) {
-        return res.status(400).json({ msg: "The email or phone number format is incorrect." });
-      }
-
-      // Verificar si `account` ya existe
-      const existingUser = await Users.findOne({ account });
-      if (existingUser) {
-        return res.status(400).json({ msg: `This account already exists.` });
-      }
-
-      if (password.length < 6) {
-        return res.status(400).json({ msg: "Password must be at least 6 chars." });
-      }
-
-      const passwordHash = await bcrypt.hash(password, 12);
-
-      const newUser = {
-        username,
-        account,
-        password: passwordHash,
-      };
-
-      const activation_token = createActivationToken(newUser);
-      const url = `${CLIENT_URL}/activate/${activation_token}`;
-
-      if (isEmail) {
-        sendMail(account, url, "Verify your email address");
-      } else if (isPhone) {
-        sendSms(account, url, "Verify your phone number");
-      }
-
-      res.json({ msg: "Success! Check your email or phone for verification." });
-    } catch (err) {
-      return res.status(500).json({ msg: err.message });
-    }
-  },
-
-*/
+ 
   activeAccount: async (req, res) => {
     try {
       const { active_token } = req.body;
@@ -147,7 +96,40 @@ const authCtrl = {
       return res.status(500).json({ msg: err.message });
     }
   },
+  login: async (req, res) => {
+    try {
+        const { account, password } = req.body
 
+        const user = await Users.findOne({account})
+        .populate("followers following", "avatar username fullname followers following")
+
+        if(!user) return res.status(400).json({msg: "Cet account n'existe pas."})
+
+        const isMatch = await bcrypt.compare(password, user.password)
+        if(!isMatch) return res.status(400).json({msg: "Le mot de passe est incorrect."})
+
+        const access_token = createAccessToken({id: user._id})
+        const refresh_token = createRefreshToken({id: user._id})
+
+        res.cookie('refreshtoken', refresh_token, {
+            httpOnly: true,
+            path: '/api/refresh_token',
+            maxAge: 30*24*60*60*1000 // 30days
+        })
+
+        res.json({
+            msg: 'Login Success!',
+            access_token,
+            user: {
+                ...user._doc,
+                password: ''
+            }
+        })
+    } catch (err) {
+        return res.status(500).json({msg: err.message})
+    }
+},
+/*
   login: async (req, res) => {
     try {
       const { account, password } = req.body;
@@ -218,7 +200,7 @@ const authCtrl = {
     }
   },
 
-
+*/
 
   loginSMS: async (req, res) => {
     try {
@@ -297,7 +279,7 @@ const authCtrl = {
       user: { ...user.toObject(), password: '' },
     });
   },
-
+/*
   // Función para registrar un nuevo usuario
   registerUser: async (user, res) => {
     const newUser = new Users(user);
@@ -319,7 +301,7 @@ const authCtrl = {
   },
 
 
-
+*/
 
   forgotPassword: async (req, res) => {
     try {
