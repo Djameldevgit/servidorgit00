@@ -10,14 +10,14 @@ const path = require('path')
 
 const app = express()
 app.use(express.json())
- //app.use(cors())
-  const corsOptions = {
+  app.use(cors())
+ /* const corsOptions = {
   origin: process.env.CLIENT_API,
   credentials: true, // Para permitir el uso de credenciales
   optionsSuccessStatus: 200 // Algunos navegadores requieren este status
 };
 app.use(cors(corsOptions));  
- 
+ */
 
 app.use(cookieParser())
 
@@ -58,10 +58,10 @@ mongoose.connect(URI, {
 })
 
 if(process.env.NODE_ENV === 'production'){
-    app.use(express.static('client/build'))
+    app.use(express.static('cliente00/build'));
     app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'))
-    })
+        res.sendFile(path.join(__dirname, 'cliente00', 'build', 'index.html'));
+    });
 }
 
 
