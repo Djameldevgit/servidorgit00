@@ -10,14 +10,14 @@ const path = require('path')
 
 const app = express()
 app.use(express.json())
-  app.use(cors())
- /* const corsOptions = {
+ // app.use(cors())
+ const corsOptions = {
   origin: process.env.CLIENT_API,
   credentials: true, // Para permitir el uso de credenciales
   optionsSuccessStatus: 200 // Algunos navegadores requieren este status
 };
 app.use(cors(corsOptions));  
- */
+ 
 
 app.use(cookieParser())
 
