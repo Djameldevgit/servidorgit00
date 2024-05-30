@@ -5,11 +5,8 @@ const sendMail = require('./sendMail')
 
 const {google} = require('googleapis')
 const {OAuth2} = google.auth
-const fetch = require('node-fetch')
-
-const client = new OAuth2(process.env.MAILING_SERVICE_CLIENT_ID)
-
-const {CLIENT_URL} = process.env
+ 
+const {CLIENT_API} = process.env
 const authCtrl = {
 
 
@@ -32,7 +29,7 @@ const authCtrl = {
     
             const newUser = { username, email, password: passwordHash };
             const activation_token = createActivationToken(newUser);
-            const url = `${CLIENT_URL}/activate/${activation_token}`;
+            const url = `${CLIENT_API}/activate/${activation_token}`;
          sendMail(email, url, "Vérifiez votre adresse e-mail");
     
          res.json({msg: `Inscription réussie, Nous avons envoyé un lien de vérification à ${email}, Veuillez vérifier votre courrier électronique pour la prochaine étape.`})      } catch (err) {
