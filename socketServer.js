@@ -1,6 +1,6 @@
-let users = []
+let users = []; // Almacena información sobre los usuarios conectados  incluyendo su ID, ID del socket, y seguidores.
 
-const EditData = (data, id, call) => {
+const EditData = (data, id, call) => {//EditData: Una función que actualiza el estado de la llamada (call) de un usuario en el array users.
     const newData = data.map(item => 
         item.id === id ? {...item, call} : item
     )
@@ -37,15 +37,7 @@ const SocketServer = (socket) => {
 
         users = users.filter(user => user.socketId !== socket.id)
     })
-  //
   
-  
-  
-  
-  
-  
-  //socket.emit('likePost', newPost)
-
     // Likes
     socket.on('likePost', newPost => {
         const ids = [...newPost.user.followers, newPost.user._id]
@@ -69,17 +61,7 @@ const SocketServer = (socket) => {
         }
     })
 
-// Emitir un mensaje a un usuario específico (server.js)
-/*socket.on('addMessage', async (msg) => {
-    // ... Guarda el mensaje en la base de datos y realiza otras acciones necesarias
-
-    const recipientSocket = onlineUsers[msg.to];
-    if (recipientSocket) {
-        io.to(recipientSocket).emit('messageToClient', msg);
-    }
-});*/
-
-    // Comments
+ 
     socket.on('createComment', newPost => {
         const ids = [...newPost.user.followers, newPost.user._id]
         const clients = users.filter(user => ids.includes(user.id))

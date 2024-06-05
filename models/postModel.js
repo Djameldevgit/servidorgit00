@@ -87,9 +87,9 @@ const postSchema = new mongoose.Schema({
     enum: ['pendiente', 'aprovado', 'eliminado'],
     default: 'pendiente'
   },
-  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }], // Corregido: mongoose.Types.ObjectId a mongoose.Schema.Types.ObjectId
-  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'comment' }], // Corregido: mongoose.Types.ObjectId a mongoose.Schema.Types.ObjectId
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' } // Corregido: mongoose.Types.ObjectId a mongoose.Schema.Types.ObjectId
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }], // Almacena los IDs de los usuarios que han dado "like" a este post. Permite contar y listar los usuarios que han indicado que les gusta el post.
+  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'comment' }], //  Almacena los IDs de los comentarios asociados a este post. Permite listar y gestionar los comentarios relacionados con el post
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' } //  Almacena el ID del usuario que creó el post. Permite identificar y asociar el post con su autor.
 }, {
   timestamps: true,
 });

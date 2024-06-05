@@ -1,17 +1,23 @@
-require('dotenv').config()
-const express = require('express')
-const mongoose = require('mongoose')
-const cors = require('cors')
-const cookieParser = require('cookie-parser')
-const SocketServer = require('./socketServer')
-const { ExpressPeerServer } = require('peer')
-const path = require('path')
+
+require('dotenv').config()  // Carga variables de entorno desde un archivo .env
+const express = require('express')  // Framework para crear el servidor web
+const mongoose = require('mongoose')  // Biblioteca para trabajar con MongoDB
+const cors = require('cors')  // Middleware para habilitar CORS (Cross-Origin Resource Sharing)
+const cookieParser = require('cookie-parser')  // Middleware para manejar cookies
+const SocketServer = require('./socketServer')  // Módulo personalizado para manejar WebSocket
+const { ExpressPeerServer } = require('peer')  // Biblioteca para habilitar WebRTC
+const path = require('path')  // Módulo para trabajar con rutas de archivos
+ 
 
 
 const app = express()
 app.use(express.json())
- // app.use(cors())
- const corsOptions = {
+ //app.use(cors())
+
+
+
+ 
+  const corsOptions = {
   origin: process.env.CLIENT_API,
   credentials: true, // Para permitir el uso de credenciales
   optionsSuccessStatus: 200 // Algunos navegadores requieren este status
