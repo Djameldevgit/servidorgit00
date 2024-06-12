@@ -12,7 +12,7 @@ const path = require('path')  // Módulo para trabajar con rutas de archivos
 
 const app = express()
 app.use(express.json())
-//  app.use(cors())
+ // app.use(cors())
 
 
  
