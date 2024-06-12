@@ -17,12 +17,24 @@ app.use(express.json())
 
  
  
+const allowedOrigins = [
+    'https://clientegit00.onrender.com',
+    'https://clientegit01.onrender.com'
+  ];
+  
   const corsOptions = {
-  origin: process.env.CLIENT_API,
-  credentials: true, // Para permitir el uso de credenciales
-  optionsSuccessStatus: 200 // Algunos navegadores requieren este status
-};
-app.use(cors(corsOptions));  
+    origin: function (origin, callback) {
+      if (allowedOrigins.includes(origin) || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    optionsSuccessStatus: 200
+  };
+  
+  app.use(cors(corsOptions));
  
 
 app.use(cookieParser())
