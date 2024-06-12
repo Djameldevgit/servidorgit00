@@ -11,7 +11,7 @@ const postSchema = new mongoose.Schema({
     required: true,
     maxlength: 50
   },
-  direccion: { // Corregido: 'direcion' a 'direccion'
+  direccion: {
     type: String,
     required: false,
     maxlength: 50
@@ -27,11 +27,11 @@ const postSchema = new mongoose.Schema({
     maxlength: 50
   },
   specifications: {
-    type: [String], // Corregido: Array de strings
+    type: [String], 
     required: false,
     maxlength: 50
   },
-  discripcion: { // Corregido: 'discripcion' a 'descripcion'
+  discripcion: {
     type: String,
     required: false,
     maxlength: 400
@@ -69,16 +69,16 @@ const postSchema = new mongoose.Schema({
     required: false,
     maxlength: 50
   },
-  informacion: { // Corregido: 'privacidad_informations' a 'informacion'
+  informacion: {
     type: Boolean,
     required: false
   },
-  comentarios : { // Corregido: 'comentarios' a 'comentarios'
+  comentarios: {
     type: Boolean,
     required: false
   },
   images: {
-    type: Array, // Corregido: Array de strings
+    type: Array,
     required: true,
     maxlength: 7
   },
@@ -87,9 +87,17 @@ const postSchema = new mongoose.Schema({
     enum: ['pendiente', 'aprovado', 'eliminado'],
     default: 'pendiente'
   },
-  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }], // Almacena los IDs de los usuarios que han dado "like" a este post. Permite contar y listar los usuarios que han indicado que les gusta el post.
-  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'comment' }], //  Almacena los IDs de los comentarios asociados a este post. Permite listar y gestionar los comentarios relacionados con el post
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' } //  Almacena el ID del usuario que creó el post. Permite identificar y asociar el post con su autor.
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
+  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'comment' }],
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
+  lat: {    
+    type: String,
+    required: false,
+  },
+  lng: {
+    type: String,
+    required: false,
+  }
 }, {
   timestamps: true,
 });

@@ -10,12 +10,12 @@ const servicioSchema = new mongoose.Schema({
   contentservicio: {
     type: String,
     required: true,
-    maxlength: 50
+  
   },
 
  
 
-  direccion: { // Corregido: 'direcion' a 'direccion'
+  direccion: { // Corregido: 'direccion' a 'direccion'
     type: String,
     required: false,
     maxlength: 50
@@ -69,10 +69,16 @@ const servicioSchema = new mongoose.Schema({
     required: false,
     maxlength: 50
   },
-  informacion: { // Corregido: 'privacidad_informations' a 'informacion'
+  informacion: { // comentarios
     type: Boolean,
     required: false
   },
+  comentarios: { // comentarios
+    type: Boolean,
+    required: false
+  },
+
+
   images: {
     type: Array, // Corregido: Array de strings
     required: true,
@@ -85,7 +91,18 @@ const servicioSchema = new mongoose.Schema({
   },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }], // Corregido: mongoose.Types.ObjectId a mongoose.Schema.Types.ObjectId
   comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'comment' }], // Corregido: mongoose.Types.ObjectId a mongoose.Schema.Types.ObjectId
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' } // Corregido: mongoose.Types.ObjectId a mongoose.Schema.Types.ObjectId
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' }, // Corregido: mongoose.Types.ObjectId a mongoose.Schema.Types.ObjectId
+
+  lat: {
+    type: String,
+    required: false,
+  },
+  lng: {
+    type: String,
+    required: false,
+  }
+
+
 }, {
   timestamps: true,
 });

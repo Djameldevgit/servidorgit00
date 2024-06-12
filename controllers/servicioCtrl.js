@@ -154,40 +154,31 @@ const servicioCtrl = {
         }
     },
     
-    updateServicio: async (req, res) => {
+    updateServicio:  async (req, res) => {
         try {
-            const {  images, ...servicioData } = req.body;
+            const { images, ...servicioData} = req.body;
+            
+                       const servicio = await Servicios.findOneAndUpdate({ _id: req.params.id }, {
+                images, ...servicioData
 
-            const servicio = await Servicios.findOneAndUpdate(
-                { _id: req.params.id },
-                {
-                    images, ...servicioData     }
-            )
-                .populate("user likes", "avatar username  ")
-                .populate({
-                    path: "comments",
-                    populate: {
-                        path: "user likes",
-                        select: "-password",
-                    },
-                });
-
-                if (servicio) {
-                    res.json({
-                        msg: "Votre service a été mis à jour",
-                        newServicio: {
-                            ...servicio._doc,
-                            images, ...servicioData
-                        
-                        },
-                    });
-                } else {
-                    // Manejar el caso en el que servicio es null
-                    res.status(404).json({ msg: "Servicio not found" });
+            }).populate("user likes", "avatar username")
+            .populate({
+                path: "comments",
+                populate: {
+                    path: "user likes",
+                    select: "-password"
                 }
-                
+            })
+
+            res.json({
+                msg: "Votre publication a été mis à jour!",
+                newServicio: {
+                    ...servicio._doc,
+                    images, ...servicioData
+                }
+            })
         } catch (err) {
-            return res.status(500).json({ msg: err.message });
+            return res.status(500).json({ msg: err.message })
         }
     },
 
@@ -350,7 +341,7 @@ const servicioCtrl = {
 
             if (!save) return res.status(400).json({ msg: 'This user does not exist.' })
 
-            res.json({ msg: 'unSaved Post!' })
+            res.json({ msg: 'unSaved servicio!' })
 
         } catch (err) {
             return res.status(500).json({ msg: err.message })

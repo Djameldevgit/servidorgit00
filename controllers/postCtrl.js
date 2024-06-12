@@ -22,14 +22,32 @@ const postCtrl = {
 
     createPostPendiente: async (req, res) => {
         try {
-            const {  content,direcion,wilaya,commune,specifications,discripcion,pricesala,dinero,negociable,nomprenom,telefono,email,web,informacion,comentarios , images } = req.body;
+            const { content, direccion, wilaya, commune, specifications, descripcion, pricesala, dinero, negociable, nomprenom, telefono, email, web, informacion, comentarios, images, lat, lang } = req.body;
             
             if (images.length === 0) {
                 return res.status(400).json({ msg: "Veuillez ajouter votre photo." });
             }
     
             const newPost = new Posts({
-                 estado: 'pendiente', content,direcion,wilaya,commune,specifications,discripcion,pricesala,dinero,negociable,nomprenom,telefono,email,web,informacion,comentarios , images,user: req.user._id,
+                estado: 'pendiente', 
+                content, 
+                direccion, 
+                wilaya, 
+                commune, 
+                specifications, 
+                descripcion, 
+                pricesala, 
+                dinero, 
+                negociable, 
+                nomprenom, 
+                telefono, 
+                email, 
+                web, 
+                informacion, 
+                comentarios, 
+                images, 
+                user: req.user._id,
+                lat, lang
             });
     
             // Utilizar el modo de preocupación por escritura 'majority'
@@ -46,6 +64,7 @@ const postCtrl = {
             return res.status(500).json({ msg: err.message });
         }
     },
+    
     
 
 
