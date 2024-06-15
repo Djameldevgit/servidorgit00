@@ -11,15 +11,9 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// Configuración de CORS
- 
-
-
-
-
-
-
-
+const allowedOrigins = [
+    process.env.REACT_APP_API_URL // Utiliza la variable de entorno para los orígenes permitidos
+];
 
 // Socket.IO
 const http = require('http').createServer(app);
@@ -34,9 +28,9 @@ io.on('connection', socket => {
     SocketServer(socket);
 });
 
+// Configuración de CORS para Express
 const corsOptions = {
     origin: function (origin, callback) {
-        const allowedOrigins = [process.env.REACT_APP_API_URL];
         if (allowedOrigins.includes(origin) || !origin) {
             callback(null, true);
         } else {
@@ -47,6 +41,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
 // Create peer server
 ExpressPeerServer(http, { path: '/' });
 
