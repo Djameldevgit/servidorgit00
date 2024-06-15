@@ -66,9 +66,9 @@ mongoose.connect(URI, {
 
 // Servir la aplicación React en producción
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static('clientegit01/build')); // Servir archivos estáticos de React
+    app.use(express.static('clientegit00/build')); // Servir archivos estáticos de React
     app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, 'clientegit01', 'build', 'index.html'));
+        res.sendFile(path.join(__dirname, 'clientegit00', 'build', 'index.html'));
     });
 }
 
