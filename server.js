@@ -12,32 +12,41 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Configuración de CORS
-const allowedOrigins = [
-    'https://clientegit00.onrender.com',
-    'https://clientegit01.onrender.com'
-];
+ 
+
+
+
+
+
+
+
+
+// Socket.IO
+const http = require('http').createServer(app);
+const io = require('socket.io')(http, {
+    cors: {
+        origin: allowedOrigins,
+        credentials: true
+    }
+});
+
+io.on('connection', socket => {
+    SocketServer(socket);
+});
 
 const corsOptions = {
     origin: function (origin, callback) {
+        const allowedOrigins = [process.env.REACT_APP_API_URL];
         if (allowedOrigins.includes(origin) || !origin) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
         }
     },
-    credentials: true, // Habilita el envío de cookies de manera segura a través de CORS
+    credentials: true // Asegúrate de habilitar el envío de cookies si es necesario
 };
 
 app.use(cors(corsOptions));
-
-// Socket.IO
-const http = require('http').createServer(app);
-const io = require('socket.io')(http);
-
-io.on('connection', socket => {
-    SocketServer(socket);
-});
-
 // Create peer server
 ExpressPeerServer(http, { path: '/' });
 
